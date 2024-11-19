@@ -3,7 +3,7 @@
 import {computed, onMounted, onUnmounted, ref} from "vue";
 
 const mainNavBreakpoint = 750;
-let currentWidth = ref(window.innerWidth);
+const currentWidth = ref(window.innerWidth);
 const isSmallScreen = computed(() => {
   return currentWidth.value <= mainNavBreakpoint
 });

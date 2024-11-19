@@ -25,6 +25,7 @@ export function handleFetchError(details) {
             })
         );
         redirect("/join");
+        return;
     }
 
     switch (details.url) {
@@ -289,5 +290,13 @@ export function handleFetchError(details) {
             }
 
             break;
+
+        default:
+            window.dispachEvent(
+                new CustomEvent('show-notification', {
+                    detal: "Something went wrong."
+                })
+            );
+            redirect("/");
     }
 }

@@ -1,16 +1,43 @@
 <script setup>
 
+import {computed, onMounted, onUnmounted, ref} from "vue";
+
 const props = defineProps({
     "columnStatusNumber": Number,
-    "taskStatusName": String
+    "taskStatusName": String,
+    "relativeIndex": Number,
 })
 const emit = defineEmits([
     "mouseOverColumn"
 ])
 
+const MAIN_BREAKPOINT = 650;
+
+const currentWidth = ref(window.innerWidth);
+const isSmallScreen = computed(() => {
+  return currentWidth.value <= MAIN_BREAKPOINT;
+});
+
+function resizeHandler() {
+  currentWidth.value = window.innerWidth;
+}
+onMounted(() => {
+  window.addEventListener('resize', resizeHandler)
+})
+onUnmounted(() => {
+  window.removeEventListener('resize', resizeHandler);
+})
 </script>
 <template>
-    <div class="column-container"
+    <div
+        class="column-container default"
+        :class="{
+          smallScreen: isSmallScreen,
+          left: relativeIndex===-1,
+          center: relativeIndex===0,
+          right: relativeIndex===1,
+          none: relativeIndex===null
+        }"
         @mouseover="emit('mouseOverColumn', columnStatusNumber)"
     >
     
@@ -20,6 +47,7 @@ const emit = defineEmits([
         </div>
 
     </div>
+
 </template>
 <style lang="sass" scoped>
     @use "@/assets/styles/common"
@@ -28,9 +56,8 @@ const emit = defineEmits([
         display: flex
         flex-direction: column
 
-        width: calc(100% / 3)
-
         position: relative
+        width: calc(100% / 3)
 
         box-sizing: border-box
 
@@ -39,7 +66,7 @@ const emit = defineEmits([
         overflow: hidden
         box-shadow: 0 0 4px 1px common.$box-shadow-color
 
-        transition: all .1s ease-in-out
+        transition: transform .1s ease-in-out, box-shadow .1s ease-in-out
 
         &:hover
             transform: scale(1.003)
@@ -70,5 +97,39 @@ const emit = defineEmits([
             overflow-y: scroll
             @extend %scrollbar
             
+
+    .column-container.smallScreen.left
+      order: 1
+      width: 10%
+
+
+    .column-container.smallScreen.center
+      order: 2
+      width: 80%
+
+
+    .column-container.smallScreen.right
+      order: 3
+      width: 10%
+
+    .column-container.smallScreen.left, .column-container.smallScreen.right
+      height: 25%
+      user-select: none
+
+      .column-header
+        height: 100%
+        text-align: center
+        word-break: break-word
+        display: flex
+        align-items: center
+        justify-content: center
+
+        h3
+          writing-mode: sideways-lr
+
+
+      .column-content
+        display: none
+
 
 </style>

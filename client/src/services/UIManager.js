@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import {computed, ref} from 'vue';
 import { useRouter } from 'vue-router';
 import {useConfirm} from "@/composables/useConfirm.js";
 import {isTouchScreen} from "@/utils/isTouchscreen.js";
@@ -23,7 +23,6 @@ class UIManager {
     this.taskManager;
     this.router = useRouter();
 
-    // this._parentTree = ref([]);
     this._mouseReleasedToggle = ref(false);
     this._creatingNewTask = ref(false);
     this._showOptions = ref(false);
@@ -32,6 +31,7 @@ class UIManager {
 
     this.optionsMenuData = {};
     this.draggedTask = null;
+
     this.isTouchScreen = isTouchScreen(); // TODO: maybe make it ref idk
 
     // Bind methods to the instance
@@ -50,6 +50,7 @@ class UIManager {
     this.pushParent = this.pushParent.bind(this);
     this.popParent = this.popParent.bind(this);
     this.selectParentInTree = this.selectParentInTree.bind(this);
+    this.selectColumn = this.selectColumn.bind(this);
   }
 
   /**
@@ -61,6 +62,30 @@ class UIManager {
     this.taskManager = taskManager;
     this._currentTasks = this.taskManager.currentTasks;
     this._parentTree = this.taskManager.parentTree;
+    this.selectedColumn = ref(this.TASK_STATUSES.TODO);
+    this.relativeColumnIndicies = computed(() => {
+      const statuses = Object.values(this.TASK_STATUSES);
+      const selectedStatusIndex = statuses.indexOf(this.selectedColumn.value);
+      const totalStatuses = statuses.length;
+
+      const indices = {};
+      let index = -1;
+      for (const taskStatusName in this.TASK_STATUSES) {
+        index += 1;
+
+        let relativeIndex = index - selectedStatusIndex;
+
+        // Handle wrapping (circular logic)
+        if (relativeIndex > Math.floor(totalStatuses / 2)) {
+          relativeIndex -= totalStatuses;
+        } else if (relativeIndex < -Math.floor(totalStatuses / 2)) {
+          relativeIndex += totalStatuses;
+        }
+
+        indices[taskStatusName] = Math.abs(relativeIndex) > 1 ? null : relativeIndex;
+      }
+      return indices;
+    })
   }
 
   get currentTasks() { return this._currentTasks.value; }
@@ -83,6 +108,7 @@ class UIManager {
   set showDescription(v) { this._showDescription.value = v; }
 
   get TASK_STATUSES() { return this.taskManager.TASK_STATUSES; }
+
 
   /**
    * Handles the event when a task is clicked.
@@ -278,7 +304,7 @@ class UIManager {
   pushParent(task) {
     this._parentTree.value.push(task);
     this.taskManager.updateCurrentTasks({ parent: task });
-
+    this.selectColumn(this.TASK_STATUSES.TODO);
   }
 
   /**
@@ -288,7 +314,10 @@ class UIManager {
    */
   popParent() {
     let parentPopped = this._parentTree.value.pop();
-    if (parentPopped !== undefined) this.taskManager.updateCurrentTasks({ parent: this.getCurrentParent() });
+    if (parentPopped !== undefined) {
+      this.taskManager.updateCurrentTasks({ parent: this.getCurrentParent() });
+      this.selectColumn(this.TASK_STATUSES.TODO);
+    }
     return parentPopped;
   }
 
@@ -316,6 +345,17 @@ class UIManager {
     // Update current tasks
     this.taskManager.updateCurrentTasks({ parent: currentParent });
 
+    this.selectedColumn(this.TASK_STATUSES.TODO);
+
+  }
+
+  /**
+   * Purely for small screen version.
+   * Selects column so that it is centered and bigger than rest.
+   * @param {Number} taskStatusNumber - new column's task status number
+   */
+  selectColumn(taskStatusNumber) {
+    this.selectedColumn.value = taskStatusNumber;
   }
 }
 

@@ -144,21 +144,21 @@ async function getParentTreeFromCookie(collabName=null, idb) {
 }
 
 function saveParentTreeToCookie(collabName=null, parentTree) {
-  const taskIds = parentTree.map(task => task.id);
+    const taskIds = parentTree.map(task => task.id);
 
-  const { prefix, separator } = getParentTreeCookiePrefixAndSeparator(collabName);
-  const cookieName = `${prefix}-taskId-parent-tree`;
-  const cookieValue = taskIds.join(separator);
-  console.log(cookieValue);
+    const { prefix, separator } = getParentTreeCookiePrefixAndSeparator(collabName);
+    const cookieName = `${prefix}-taskId-parent-tree`;
+    const cookieValue = taskIds.join(separator);
 
-  setCookie(cookieName, cookieValue, { expires: 28, path: '/' });
+    setCookie(cookieName, cookieValue, { expires: 28, path: '/' });
+
 }
 
 /**
  * Saves parent tree to cookie
  */
 function beforeUnloadHandler() {
-  saveParentTreeToCookie(collabName, uiManager.parentTree);
+  if (managersLoaded.value) saveParentTreeToCookie(collabName, uiManager.parentTree);
 }
 
 // Helper functions
@@ -219,7 +219,7 @@ onUnmounted(() => {
   window.removeEventListener("touchend", debouncedMouseUp.run);
   window.removeEventListener("beforeunload", beforeUnloadHandler);
 
-  saveParentTreeToCookie(collabName, uiManager.parentTree);
+  if (managersLoaded.value) saveParentTreeToCookie(collabName, uiManager.parentTree);
   if (collaborating) collabManager.disconnect(); // Disconnect pusher to prevent bugs
 })
 
@@ -244,7 +244,9 @@ onUnmounted(() => {
           :key="taskStatusNumber"
           :column-status-number="taskStatusNumber"
           :task-status-name="taskStatusName"
+          :relative-index="uiManager.relativeColumnIndicies.value[taskStatusName]"
           @mouse-over-column="uiManager.mouseOverColumn"
+          @click="uiManager.selectColumn(taskStatusNumber)"
         >
           <AddTaskButton
             v-if="taskStatusNumber === uiManager.TASK_STATUSES.TODO"
@@ -278,6 +280,7 @@ onUnmounted(() => {
           @show-description-toggle="uiManager.showDescription = !uiManager.showDescription"
           :is-description-shown="uiManager.showDescription"
           :disabled="uiManager.getCurrentParent() === null"
+          class="show-description-button"
         />
         <Transition
           name="description-transition"
@@ -289,6 +292,7 @@ onUnmounted(() => {
               v-if="uiManager.showDescription"
               :task="uiManager.getCurrentParent()"
               @save-description="uiManager.updateDescription"
+              :style="{ height: uiManager.showDescription ? '70%' : '0' }"
             />
         </Transition>
         </div>
@@ -390,8 +394,7 @@ onUnmounted(() => {
       right: calc(-1 * $main-padding + 2px)
 
       z-index: 999
-
-      height: 70%
+      //height: 70% (in script)
       top: 50%
       transform: translateY(-50%)
 
@@ -427,6 +430,7 @@ onUnmounted(() => {
       opacity: 1
       width: 30vw
       min-width: 250px
+
 </style>
 
 <style>
