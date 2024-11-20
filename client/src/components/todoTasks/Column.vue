@@ -123,6 +123,7 @@ onUnmounted(() => {
         display: flex
         align-items: center
         justify-content: center
+        border: 0
 
         h3
           writing-mode: sideways-lr

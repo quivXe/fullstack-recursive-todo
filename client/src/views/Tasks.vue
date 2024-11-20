@@ -183,8 +183,6 @@ const freezeDescriptionTitle = () => {
   // setting width in clone
   const descContainerClone = descContainer.cloneNode(true);
   descContainerClone.classList.add("description-container-clone");
-  descContainerClone.querySelector(".container").style.width = "30vw"; // update when style updates
-  descContainerClone.querySelector(".container").style.padding = "15px"; // update when
   document.querySelector(".main-container .main").appendChild(descContainerClone);
 
   // setting width in original while in transition
@@ -275,7 +273,7 @@ onUnmounted(() => {
           />
         </Column>
       </div>
-      <div class="description-container">
+      <div class="description-container" :class="{'not-shown': !uiManager.showDescription}">
         <ShowDescriptionButton
           @show-description-toggle="uiManager.showDescription = !uiManager.showDescription"
           :is-description-shown="uiManager.showDescription"
@@ -292,7 +290,6 @@ onUnmounted(() => {
               v-if="uiManager.showDescription"
               :task="uiManager.getCurrentParent()"
               @save-description="uiManager.updateDescription"
-              :style="{ height: uiManager.showDescription ? '70%' : '0' }"
             />
         </Transition>
         </div>
@@ -394,9 +391,13 @@ onUnmounted(() => {
       right: calc(-1 * $main-padding + 2px)
 
       z-index: 999
-      //height: 70% (in script)
+      height: 70%
       top: 50%
       transform: translateY(-50%)
+
+    .description-container.not-shown
+      height: 0
+      transition: height .4s step-end // same time as in description transition to prevent shrinking.
 
   .options-overlay
     @extend %overlay
@@ -429,7 +430,15 @@ onUnmounted(() => {
   .description-transition-leave-from
       opacity: 1
       width: 30vw
-      min-width: 250px
+
+  @media (max-width: 950px)
+    .description-transition-enter-to,
+    .description-transition-leave-from
+      width: calc(100vw - 25px - 7px - 10px)
+
+    .main
+      .description-container
+        height: 100%
 
 </style>
 
@@ -449,5 +458,13 @@ onUnmounted(() => {
       transform: translateY(-50%);
 
   }
-
+  .description-container-clone .container {
+    width: 30vw;
+    padding: 15px
+  }
+@media (max-width: 950px) {
+  .description-container-clone .container {
+    width: calc(100vw - 25px - 7px - 10px)
+  }
+}
 </style>

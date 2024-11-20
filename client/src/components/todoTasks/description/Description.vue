@@ -169,4 +169,7 @@ onBeforeUnmount(() => {
             color: common.$subtle-text-color
             user-select: none
 
+@media (max-width: 950px)
+  .container
+    width: calc(100vw - 25px - 7px - 10px)
 </style>
