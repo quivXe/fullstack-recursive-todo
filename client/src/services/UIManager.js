@@ -231,29 +231,27 @@ class UIManager {
       ]
     };
 
-    if (this.isTouchScreen) {
-      // Add option to move to task statuses.
-      for (const statusKey in this.TASK_STATUSES) {
-        const statusValue = this.TASK_STATUSES[statusKey];
+    // Add option to move to task statuses.
+    for (const statusKey in this.TASK_STATUSES) {
+      const statusValue = this.TASK_STATUSES[statusKey];
 
-        // Skip the current status of the task
-        if (task.status === statusValue) {
-          continue;
-        }
-
-        // Add an option for changing the task's status
-        this.optionsMenuData.options.push({
-          name: `Move to ${statusKey}`, // Use the key name for the menu label
-          callback: () => {
-            this.showOptions = false; // Hide options menu
-            task.status = statusValue; // Update task's status
-            task.flexIndex = 9999; // Set a high flex index
-            this.taskManager.fixFlexIndexesAndSetStatus({
-              draggedTask: task,
-            });
-          },
-        });
+      // Skip the current status of the task
+      if (task.status === statusValue) {
+        continue;
       }
+
+      // Add an option for changing the task's status
+      this.optionsMenuData.options.push({
+        name: `Move to ${statusKey}`, // Use the key name for the menu label
+        callback: () => {
+          this.showOptions = false; // Hide options menu
+          task.status = statusValue; // Update task's status
+          task.flexIndex = 9999; // Set a high flex index
+          this.taskManager.fixFlexIndexesAndSetStatus({
+            draggedTask: task,
+          });
+        },
+      });
     }
   }
 
@@ -345,7 +343,7 @@ class UIManager {
     // Update current tasks
     this.taskManager.updateCurrentTasks({ parent: currentParent });
 
-    this.selectedColumn(this.TASK_STATUSES.TODO);
+    this.selectColumn(this.TASK_STATUSES.TODO);
 
   }
 

@@ -3,6 +3,8 @@ import IndexedDBManager from '../services/IndexedDBManager';
 import Loading from '@/components/Loading.vue';
 import { ref } from 'vue';
 import { useConfirm } from '@/composables/useConfirm';
+import {isTouchScreen} from "@/utils/isTouchscreen.js";
+import router from "@/router/index.js";
 
 const collabNames = ref(null);
 const loading = ref(true);
@@ -41,6 +43,14 @@ function deleteCollab(collabName) {
     })
 }
 
+const selectedCollab = ref("");
+function handleCollabClicked(collabName) {
+  if (!isTouchScreen()) return router.push(`/join/${collabName}`);
+  if (selectedCollab.value === collabName) return router.push(`/join/${collabName}`);
+  return selectedCollab.value = collabName;
+}
+
+
 indexedDBManager.getTasksByParentId(-1)
 .then(res => {
     collabNames.value = new Set(res.map(task => task.collabName));
@@ -56,7 +66,7 @@ indexedDBManager.getTasksByParentId(-1)
 </script>
 
 <template>
-    <div class="container">
+    <div class="container" @click="selectedCollab=null">
       <h1 class="title">Collaborations</h1>
       <p class="info-text">
         Here is you saved collaboration list.<br>
@@ -74,17 +84,27 @@ indexedDBManager.getTasksByParentId(-1)
       </p>
 
       <div class="links" v-if="!loading && collabNames">
-          <router-link
-            v-for="collabName in collabNames"
-            :key="collabName"
-            :to="`/join/${collabName}`"
-            class="collab-link"
-          >
-            <span>{{ collabName }}</span>
-            <div class="img-wrapper" @click.prevent="">
-                <img src="@/assets/images/trashcan.svg" alt="delete" @click.prevent="deleteCollab(collabName)">
+<!--          <router-link-->
+<!--            v-for="collabName in collabNames"-->
+<!--            :key="collabName"-->
+<!--            :to="`/join/${collabName}`"-->
+<!--            class="collab-link"-->
+<!--          >-->
+            <div
+                v-for="collabName in collabNames"
+                :key="collabName"
+                class="collab-link"
+                :class="{active: selectedCollab === collabName}"
+                @click.stop="handleCollabClicked(collabName)"
+                @mouseenter="selectedCollab=collabName"
+                @mouseleave="selectedCollab=null"
+            >
+              <span>{{ !isTouchScreen() ? collabName : (selectedCollab === collabName ? 'Join' : collabName) }}</span>
+              <div class="img-wrapper" @click.stop>
+                  <img src="@/assets/images/trashcan.svg" alt="delete" @click.stop="deleteCollab(collabName)">
+              </div>
             </div>
-          </router-link>
+<!--          </router-link>-->
       </div>
     </div>
   </template>
@@ -140,7 +160,7 @@ indexedDBManager.getTasksByParentId(-1)
         flex-direction: column
         align-items: center
         gap: 20px
-        width: 30%
+        width: clamp(300px, 40vw, 550px)
         padding-bottom: 10px
 
     .collab-link
@@ -157,13 +177,8 @@ indexedDBManager.getTasksByParentId(-1)
 
         position: relative
 
-        &:hover
-            background-color: common.$bg-color-contrast
-            transform: scale(1.05)
-            box-shadow: 0 4px 8px common.$box-shadow-color-2-hover
-
-            .img-wrapper
-                display: unset
+        span
+          user-select: none
 
         .img-wrapper
             position: absolute
@@ -183,16 +198,31 @@ indexedDBManager.getTasksByParentId(-1)
                 box-shadow: 0 0 3px 0 common.$box-shadow-color
 
                 transition: all .2s ease-in-out
+                cursor: pointer
 
                 &:hover
                     background-color: common.$notification-bg-color
                     box-shadow: 0 0 3px 1px common.$box-shadow-color-hover
+
+    .collab-link.active
+      background-color: common.$bg-color-contrast
+      transform: scale(1.05)
+      box-shadow: 0 4px 8px common.$box-shadow-color-2-hover
+
+      .img-wrapper
+        display: unset
 
 .container
     >:first-child
         margin-top: auto
     >:last-child
         margin-bottom: auto
+
+
+//@media (max-width: 1400px)
+//  .container
+//    .links
+//      width: clamp(300px, 40vw, 1000px)
 
 
 </style>
