@@ -7,7 +7,7 @@ import { generateUUID } from './uuid';
  * @param {number} parentId - The ID of the parent task in the local IndexedDB.
  * @param {string} collabName - The name of collaboration.
  * @param {number} [newParentId=-1] - The ID of the parent task in the collaboration IndexedDB. Default: -1 (root).
- * @returns {Promise<void>} A promise that resolves when all tasks have been migrated to the collaboration IndexedDB.
+ * @returns {Promise<Awaited<unknown>[]>} A promise that resolves when all tasks have been migrated to the collaboration IndexedDB.
  */
 export async function migrateTaskTree (localIndexedDBManager, collabIndexedDBManager, collabName,parentId, newParentId=-1) {
     const migrateRec = async (parentId, newParentId) => {
@@ -17,11 +17,14 @@ export async function migrateTaskTree (localIndexedDBManager, collabIndexedDBMan
         parent.parentId = newParentId;
         parent.collabTaskId = generateUUID();
 
+        await collabIndexedDBManager.addObject(parent);
+
         const addChildrenPromise = localIndexedDBManager.getTasksByParentId(parentId).then(children => {
             return Promise.all( children.map(child => migrateRec( child.id, parent.collabTaskId )) );
         });
         return addChildrenPromise;
     }
+
     return migrateRec(parentId, newParentId);
 }
 
