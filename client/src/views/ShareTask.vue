@@ -178,6 +178,7 @@ async function onSubmit() {
   font-size: 2.5rem
   font-weight: 600
   margin-bottom: 20px
+  text-align: center
 
 .info-text
   font-size: 1rem
@@ -192,5 +193,6 @@ async function onSubmit() {
   text-decoration: none
   &:hover
     text-decoration: underline
+
 
 </style>

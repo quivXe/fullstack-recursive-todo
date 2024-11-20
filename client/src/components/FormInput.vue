@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, watch } from "vue";
+import {nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch} from "vue";
     import Debounce from "../utils/debounce";
 
     const props = defineProps({
@@ -18,11 +18,43 @@
     const _showTooltip = ref(false);
     
     const hideTooltip = new Debounce(() => _showTooltip.value = false, 3000);
+    const debouncedAdjustTooltip = new Debounce(() => adjustTooltip(), 500);
 
     watch(() => props.showTooltipToggle, () => {
         _showTooltip.value = true;
         hideTooltip.run();
     });
+
+    const tooltipRef = useTemplateRef("tooltip");
+
+    function adjustTooltip() {
+      if (tooltipRef.value) {
+
+        tooltipRef.value.style.transform = '';
+
+        nextTick(() => {
+
+          const rect = tooltipRef.value.getBoundingClientRect();
+
+          if (rect.right >= window.innerWidth) {
+            const visible = window.innerWidth - rect.left;
+            const notVisible = rect.width - visible;
+
+            tooltipRef.value.style.transform = `translateX(-${notVisible + 10}px)`
+          }
+
+        })
+
+      }
+    }
+
+    onMounted(() => {
+      adjustTooltip();
+      window.addEventListener("resize", debouncedAdjustTooltip.run);
+    });
+    onUnmounted(() => {
+      window.removeEventListener("resize", debouncedAdjustTooltip.run);
+    })
 
 </script>
 <template>
@@ -44,11 +76,13 @@
         <span 
             v-if="info"
             class="info-icon"
-            @mouseover="{ hideTooltip.stop(); _showTooltip = true }"
+            @mouseover=" hideTooltip.stop(); _showTooltip = true "
             @mouseleave="_showTooltip = false"
+            @touchstart.prevent.stop=" _showTooltip = true; hideTooltip.run() "
+            :style="{overflow: _showTooltip ? 'visible' : 'hidden'}"
         >
           <img src="@/assets/images/info.svg" alt="ℹ️">
-          <Transition> <div v-if="_showTooltip" class="tooltip">{{ info }}</div> </Transition>
+          <span :class="{hidden: !_showTooltip}" class="tooltip" ref="tooltip">{{ info }}</span>
         </span>
       </div>
     </div>
@@ -80,6 +114,7 @@
     display: flex
     align-items: center
 
+
     img
       height: 20px
       margin: auto
@@ -95,12 +130,11 @@
     border-radius: 4px
     font-size: 0.9rem
     white-space: nowrap
-
-  .v-enter-active, .v-leave-active
     transition: opacity .2s ease
-  .v-enter-from, .v-leave-to
-    opacity: 0
-  .v-enter-to
     opacity: 1
+
+    &.hidden
+      opacity: 0
+
   </style>
   

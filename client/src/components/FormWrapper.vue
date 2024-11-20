@@ -32,7 +32,7 @@
   display: flex
   flex-direction: column
   gap: 15px
-  width: 100%
+  width: calc(100% - 30px) // 20px for tooltip icon, 5px*2 for padding
   max-width: 500px
 
 .submit-btn
