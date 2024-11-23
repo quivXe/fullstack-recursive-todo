@@ -4,7 +4,14 @@ import { setCookie, getCookie } from "../utils/cookieUtils";
 import { importTasks } from "../utils/taskTransferUtils";
 import { handleFetchError, redirect } from "../utils/handleErrorUtil";
 
+/**
+ * Manages collaboration tasks using Pusher for real-tome updates.
+ */
 class CollaborationManager {
+    /**
+     * Binds Initializes the collaboration manager.
+     * @param {string} collabName - The name of the collaboration session.
+     */
     constructor(collabName) {
         this.collabName = collabName;
 
@@ -24,6 +31,10 @@ class CollaborationManager {
 
     }
 
+    /**
+     * Subscribes to the collaboration channel
+     * @returns {Promise<unknown>} Resolves when subscription is successful, rejects on error.
+     */
     subscribe() {
         this.channel = this.pusher.subscribe(`private-${this.collabName}`);
         return new Promise((resolve, reject) => {
@@ -36,13 +47,16 @@ class CollaborationManager {
         })
     }
 
+    /**
+     * Disconnects from the Pusher service.
+     */
     disconnect() {
         this.pusher.disconnect();
     }
 
     /**
-     *
-     * @param {TaskManager} taskManager
+     * Binds event listeners to the Pusher channel for task operations.
+     * @param {TaskManager} taskManager - Manages task operations in the collaboration.
      */
     bind(taskManager) {
 
@@ -82,6 +96,13 @@ class CollaborationManager {
             })
         })
     }
+
+    /**
+     * Sends an operation to the server.
+     * @param {string} type - The type of operation (add, update, delete).
+     * @param {object} details - Details of the operation.
+     * @returns {Promise<unknown>} - Resolves when operation is logged successfully, rejects on error.
+     */
     send(type, details) {
         return new Promise((resolve, reject) => {
 
@@ -106,6 +127,12 @@ class CollaborationManager {
         })
     }
 
+    /**
+     * Fetches operations from the database since the last update (if any).
+     * @param {TaskManager} taskManager - Manages task operations in the collaboration.
+     * @param {IndexedDBManager} collabIndexedDBManager - Manages IndexedDB operations for the collaboration.
+     * @returns {Promise<number>}
+     */
     async getOperationsFromDatabase(taskManager, collabIndexedDBManager) {
         function handleRequestCurrentVersionError({nooneOnline, err, url}) {
             if (nooneOnline) {
@@ -197,6 +224,11 @@ class CollaborationManager {
         }
     }
 
+    /**
+     * Requests the current version of tasks from online users in the collaboration.
+     * @param {IndexedDBManager} collabIndexedDBManager - Manages IndexedDB operations for the collaboration.
+     * @returns {Promise<unknown>} - Resolves with current version data, rejects on error.
+     */
     requestCurrentVersion(collabIndexedDBManager) {
         return new Promise((mainResolve, mainReject) => {
 
@@ -257,6 +289,12 @@ class CollaborationManager {
 
     }
 
+    /**
+     * Handles an incoming operation and applies it to the task manager.
+     * @param {string} type - The type of operation (add, update, delete).
+     * @param {object} details - Details of the operation.
+     * @param {TaskManager} taskManager - Manages task operations in the collaboration.
+     */
     async handleOperation(type, details, taskManager) {
         console.log(type, details);
         switch (type) {

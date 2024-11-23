@@ -46,7 +46,7 @@ onUnmounted(() => {
     </ul>
     <img src="@/assets/images/burger.svg" alt="menu" class="burger" @click="isNavShowed = !isNavShowed" v-if="isSmallScreen">
   </div>
-  <div id="overlay" v-if="isNavShowed && isSmallScreen"></div>
+  <div id="overlay" v-if="isNavShowed && isSmallScreen" @click="isNavShowed=false"></div>
 </template>
 
 <style scoped lang="sass">
