@@ -1,7 +1,7 @@
 <script setup>
 import IndexedDBManager from '../services/IndexedDBManager';
 import Loading from '@/components/Loading.vue';
-import { ref } from 'vue';
+import {ref} from 'vue';
 import { useConfirm } from '@/composables/useConfirm';
 import {isTouchScreen} from "@/utils/isTouchscreen.js";
 import router from "@/router/index.js";
@@ -41,6 +41,11 @@ function deleteCollab(collabName) {
     .catch(() => {
         console.log("cancel");
     })
+}
+
+const touchscreen = isTouchScreen();
+function getLinkText(collabName) {
+  return !touchscreen ? collabName : (selectedCollab.value === collabName ? 'Join' : collabName)
 }
 
 const selectedCollab = ref("");
@@ -99,7 +104,7 @@ indexedDBManager.getTasksByParentId(-1)
                 @mouseenter="selectedCollab=collabName"
                 @mouseleave="selectedCollab=null"
             >
-              <span>{{ !isTouchScreen() ? collabName : (selectedCollab === collabName ? 'Join' : collabName) }}</span>
+              <span>{{ getLinkText(collabName) }}</span>
               <div class="img-wrapper" @click.stop>
                   <img src="@/assets/images/trashcan.svg" alt="delete" @click.stop="deleteCollab(collabName)">
               </div>
@@ -219,10 +224,10 @@ indexedDBManager.getTasksByParentId(-1)
         margin-bottom: auto
 
 
-//@media (max-width: 1400px)
-//  .container
-//    .links
-//      width: clamp(300px, 40vw, 1000px)
+@media (max-width: 440px)
+  .container
+    .links
+      width: 200px
 
 
 </style>
