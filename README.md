@@ -1,8 +1,16 @@
-# TODO APP IN VUE
+# TODO APP IN VUE AND NODE
 
-Basic TODO web app.
+TODO app with infinite recursion (you can go into the task again and again for better organization).
 
-Using: VUE 3, Node.js, Pusher, SASS
+Option for creating `collabs` *(may not work because of free hosting provider for cashing - needs refreshing)*. With collabs you can work on the same tasks with anyone. And all that without creating account.
+
+available on: https://todo-app.alwaysdata.net/ *(again - may not work cuz of free hosting - especially collabs because of cashing)*
+
+Using: VUE 3, Node.js, Pusher (ala websockets), SASS, cashing system (free redis alternative)
+
+
+*quick view*
+<img width="1920" height="1030" alt="image" src="https://github.com/user-attachments/assets/f3c413ac-d88a-443a-b585-fb785e281c7d" />
 
 # server API
 
