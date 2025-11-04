@@ -1,6 +1,7 @@
 # TODO APP IN VUE AND NODE
 
-TODO app with infinite recursion.
+TODO app with infinite recursion (you can go into the task again and again for better organization).
+
 Option for creating `collabs` *(may not work because of free hosting provider for cashing - needs refreshing)*. With collabs you can work on the same tasks with anyone. And all that without creating account.
 
 available on: https://todo-app.alwaysdata.net/ *(again - may not work cuz of free hosting - especially collabs because of cashing)*
