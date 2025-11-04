@@ -257,7 +257,6 @@ class CollaborationManager {
                                     try {
                                         this.channel.unbind("get-current-version");
                                         const tasks = chunks.flat();
-                                        console.log(tasks);
                                         const timestamp = pusherData.timestamp;
                                         resolve({ tasks, timestamp });
                                     } catch(er) {
@@ -311,7 +310,6 @@ class CollaborationManager {
      * @param {TaskManager} taskManager - Manages task operations in the collaboration.
      */
     async handleOperation(type, details, taskManager) {
-        console.log(type, details);
         switch (type) {
             case "add":
                 taskManager.addTask({

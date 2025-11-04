@@ -121,9 +121,7 @@ exports.establishConnectionController = async (req, res) => {
         if (socket_id !== openForResponse[collabName].socket_id) return res.status(401).json({ error: "Wrong socket_id" });
 
         // Sent pusher event
-        console.log({tasks});
         const chunks = chunkTasksBySize(tasks, 10_000);
-        console.log({chunks});
         const totalChunks = chunks.length;
         chunks.forEach((chunk, chunkIndex) => {
             pusher.trigger(`private-${collabName}`, 'get-current-version', {
