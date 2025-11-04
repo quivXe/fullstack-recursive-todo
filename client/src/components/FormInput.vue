@@ -2,7 +2,7 @@
 import {nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch} from "vue";
     import Debounce from "../utils/debounce";
 
-    const props = defineProps({
+      const props = defineProps({
       id: { type: String, required: true },
       label: { type: String, required: true },
       type: { type: String, default: "text" },

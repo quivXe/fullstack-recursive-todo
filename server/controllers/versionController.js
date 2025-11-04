@@ -1,4 +1,5 @@
 // /server/controllers/versionController.js
+const { chunkTasksBySize } = require('../utils/jsonUtils');
 const pusher = require('../config/pusher');
 
 const openForResponse = {}; // TODO: maybe later add it to memcache
@@ -99,32 +100,44 @@ exports.establishConnectionController = async (req, res) => {
     }
 }
 
-/**
- * This function handles providing current version.
- * If user established connection first, he should send tasks and timestamp in request body.
- *
- * @param req - The request data containing the request body.
- * @param {string} req.body.collabName - The name of the collaboration.
- * @param {string} req.body.socket_id - The socket ID of the user making the request.
- * @param {import('../../client/src/services/TaskManager').Task[]} req.body.tasks - The tasks in the current version.
- * @param {number} req.body.timestamp - Current timestamp.
- * @param res - The response object used to send responses to the client.
- * @returns {Promise<*>}
- */
-exports.provideCurrentVersionController = async (req, res) => {
-    const { collabName, socket_id, tasks, timestamp } = req.body;
+    /**
+     * This function handles providing current version.
+     * If user established connection first, he should send tasks and timestamp in request body.
+     *
+     * @param req - The request data containing the request body.
+     * @param {string} req.body.collabName - The name of the collaboration.
+     * @param {string} req.body.socket_id - The socket ID of the user making the request.
+     * @param {import('../../client/src/services/TaskManager').Task[]} req.body.tasks - The tasks in the current version.
+     * @param {number} req.body.timestamp - Current timestamp.
+     * @param res - The response object used to send responses to the client.
+     * @returns {Promise<*>}
+     */
+    exports.provideCurrentVersionController = async (req, res) => {
+        const { collabName, socket_id, tasks, timestamp } = req.body;
 
-    if ( !collabName || !socket_id || !tasks || !timestamp ) return res.status(400).json({error: "Invalid request body."});
+        if ( !collabName || !socket_id || !tasks || !timestamp ) return res.status(400).json({error: "Invalid request body."});
 
-    if (openForResponse[collabName]?.isOpen) { return res.status(409).json({ error: "Establish connection first" }) }
-    if (socket_id !== openForResponse[collabName].socket_id) return res.status(401).json({ error: "Wrong socket_id" });
+        if (openForResponse[collabName]?.isOpen) { return res.status(409).json({ error: "Establish connection first" }) }
+        if (socket_id !== openForResponse[collabName].socket_id) return res.status(401).json({ error: "Wrong socket_id" });
 
-    // Sent pusher event
-    pusher.trigger(`private-${collabName}`, 'get-current-version', {ok: true, tasks, timestamp}, {socket_id}); // TODO: split it if needed, compress it
+        // Sent pusher event
+        console.log({tasks});
+        const chunks = chunkTasksBySize(tasks, 10_000);
+        console.log({chunks});
+        const totalChunks = chunks.length;
+        chunks.forEach((chunk, chunkIndex) => {
+            pusher.trigger(`private-${collabName}`, 'get-current-version', {
+                ok: true,
+                chunk,
+                chunkIndex,
+                totalChunks: totalChunks,
+                timestamp
+            }, {socket_id}); // TODO: split it if needed, compress it
+        })
+        
+        // Clear openForResponse dict
+        clearTimeout(openForResponse[collabName].timeout);
+        delete openForResponse[collabName];
 
-    // Clear openForResponse dict
-    clearTimeout(openForResponse[collabName].timeout);
-    delete openForResponse[collabName];
-
-    return res.status(200).json({ ok: true });
-}
+        return res.status(200).json({ ok: true });
+    }

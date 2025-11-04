@@ -240,15 +240,30 @@ class CollaborationManager {
                 .then(serverResData => {
 
                     return new Promise((resolve, reject) => {
-
+                        const chunks = [];
+                        
                         if (serverResData.ok) { // someone may provide current version - listen for it
                             this.channel.bind("get-current-version", pusherData => {
-                                this.channel.unbind("get-current-version");
-
                                 if (!pusherData.ok && pusherData.nooneOnline) {
                                     reject({nooneOnline: true, err: null});
                                 }
-                                resolve(pusherData);
+                                if (!pusherData.ok) {
+                                    reject();
+                                }
+                                
+                                chunks[pusherData.chunkIndex] = pusherData.chunk
+                                
+                                if (pusherData.totalChunks === chunks.length) {
+                                    try {
+                                        this.channel.unbind("get-current-version");
+                                        const tasks = chunks.flat();
+                                        console.log(tasks);
+                                        const timestamp = pusherData.timestamp;
+                                        resolve({ tasks, timestamp });
+                                    } catch(er) {
+                                        reject({err})
+                                    }
+                                }
                             })
 
                         } else {
