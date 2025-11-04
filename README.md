@@ -6,11 +6,26 @@ Option for creating `collabs` *(may not work because of free hosting provider fo
 
 available on: https://todo-app.alwaysdata.net/ *(again - may not work cuz of free hosting - especially collabs because of cashing)*
 
+
+## How it works?
+App is splitted into two categories: local and collab. 
+
+Local version is simply saved in localStorage and recursion is done simply with parentId.
+
+Collab version is also saved in localStorage and if someone joins collaboration, at least 1 person with newest version must be online, so tasks can be shared to new user. After first sync, updates are done with Pusher (which is something like WebSockets) - for example when someone moves task, move event is triggered and every subscriber updates current version.
+
+To prevent the need to have an online user everytime someone with outdated tasks joins, database is used - every operation is stored with date. User then checks his last updated operation date and sends it to the server. Server then have 3 options:
+- date is not in database: version is very old and been already deleted - user must get whole tasks array from online user
+- date is in database but its not first: every operation is sent to the user and he goes through it updating its tasks
+- date is in databse and its first: version is up to date, nothing to be done
+
 Using: VUE 3, Node.js, Pusher (ala websockets), SASS, cashing system (free redis alternative)
 
 
 *quick view*
 <img width="1920" height="1030" alt="image" src="https://github.com/user-attachments/assets/f3c413ac-d88a-443a-b585-fb785e281c7d" />
+<img width="1920" height="1030" alt="image" src="https://github.com/user-attachments/assets/978f0aeb-8e07-4eb2-9925-4423dea00a30" />
+
 
 # server API
 
