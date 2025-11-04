@@ -7,6 +7,10 @@ available on: https://todo-app.alwaysdata.net/ *(again - may not work cuz of fre
 
 Using: VUE 3, Node.js, Pusher (ala websockets), SASS, cashing system (free redis alternative)
 
+
+*quick view*
+<img width="1920" height="1030" alt="image" src="https://github.com/user-attachments/assets/f3c413ac-d88a-443a-b585-fb785e281c7d" />
+
 # server API
 
 ## COLLABORATIONS
